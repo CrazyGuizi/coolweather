@@ -19,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.coolweather.android.MainActivity;
 import com.coolweather.android.R;
 import com.coolweather.android.activity.WeatherActivity;
 import com.coolweather.android.db.City;
@@ -89,12 +90,20 @@ public class ChooseAreaFragment extends Fragment {
                     selectedCity = cityList.get(i);
                     queryCounties();
                 } else if (currentLevel == LEVEL_COUNTY) {
-                    Log.d("跳转天气详情", "onItemClick: "+"跳转到天气详情界面");
                     String weatherId = countyList.get(i).getWeatherId();
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id",weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if (getActivity() instanceof MainActivity) { // 如果是从MainActivity选择的，则调到天气详情界面
+                        Log.d("跳转天气详情", "onItemClick: "+"跳转到天气详情界面");
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id",weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    } else if (getActivity() instanceof WeatherActivity) { // 如果是重新选择城市，只要刷新后关闭侧拉栏就可以了
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
+
                 }
             }
         });
